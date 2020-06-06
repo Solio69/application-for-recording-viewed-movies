@@ -1,95 +1,131 @@
 
 'use strict';
 
-const movieDB = {
-    movies: [
-        "Логан",
-        "Лига справедливости",
-        "Ла-ла лэнд",
-        "Одержимость",
-        "Скотт Пилигрим против..."
-    ]
-};
+document.addEventListener ("DOMContentLoaded", () => {
 
-const add = document.querySelectorAll('.promo__adv img'), // получаем псевдомасив с рекл. блоками
-    poster = document.querySelector('.promo__bg'), // Получаем блок с фоновым изображ. 
-    ganre = poster.querySelector('.promo__genre'), // Получаем блок с названием жанра
-    movieList = document.querySelector('.promo__interactive-list');
-
-// Удалить все рекламные блоки со страницы (правая часть сайта)
-add.forEach( item => {
-    item.remove();
-});
-
-// Изменить жанр фильма, поменять "комедия" на "драма"
-ganre.textContent = 'драмма';
-
-// Изменить задний фон постера с фильмом на изображение "bg.jpg". Оно лежит в папке img.
-poster.style.backgroundImage = "url(img/bg.jpg)";
-
-// Отсортировать их по алфавиту 
-movieDB.movies.sort();
-
-// Список фильмов на странице сформировать на основании данных из этого JS файла.
-// Удаляем то что есть в верстке
-movieList.innerHTML = '';
-
-// Добавляем новый код
-// Добавить нумерацию выведенных фильмов 
-movieDB.movies.forEach( (film, i ) =>{
-    movieList.innerHTML += `
-        <li class="promo__interactive-item">${i + 1} ${film}
-            <div class="delete"></div>
-        </li>
-    `;
-});
-
-// 1) Реализовать функционал, что после заполнения формы и нажатия кнопки "Подтвердить" - 
-// новый фильм добавляется в список. Страница не должна перезагружаться.
-// Новый фильм должен добавляться в movieDB.movies.
-// Для получения доступа к значению input - обращаемся к нему как input.value;
-// P.S. Здесь есть несколько вариантов решения задачи, принимается любой, но рабочий.
-
-const btn = document.querySelector('button'),
-    inputIn = document.querySelector('.adding__input'),
-    checkbox = document.getElementsByTagName("input")[2];
+    const movieDB = {
+        movies: [
+            "Логан",
+            "Лига справедливости",
+            "Ла-ла лэнд",
+            "Одержимость",
+            "Скотт Пилигрим против..."
+        ]
+    };
     
-let newFilm; 
- 
+    const add = document.querySelectorAll('.promo__adv img'), // получаем псевдомасив с рекл. блоками
+        poster = document.querySelector('.promo__bg'), // Получаем блок с фоновым изображ. 
+        ganre = poster.querySelector('.promo__genre'), // Получаем блок с названием жанра
+        movieList = document.querySelector('.promo__interactive-list'), //получаем список фильмов со страницы
+        addForm = document.querySelector('form.add'), // получаем форму
+        addInput = addForm.querySelector('.adding__input'), // из формы получаем инпут
+        checkbox = addForm.querySelector('[type = "checkbox"]'); // из формы получаем чекбокс
+    
 
-btn.addEventListener('click', () => {
-    event.preventDefault();
 
-    // 2) Если название фильма больше, чем 21 символ - обрезать его и добавить три точки
-    newFilm = inputIn.value;
-    if (newFilm.length > 20 ) {
-        newFilm = newFilm.slice(0, 20) + "...";
+
+    // Функция удаления элементов из массива
+    const deliteAdv = (arr) => {
+        arr.forEach( item => {
+            item.remove();
+        });
+    };
+    
+
+    //Функция (доп.) изменения на странице 
+    const makeChanges = () => {
+        // Изменить жанр фильма, поменять "комедия" на "драма"
+        ganre.textContent = 'драмма';
+            
+        // Изменить задний фон постера с фильмом на изображение "bg.jpg". Оно лежит в папке img.
+        poster.style.backgroundImage = "url(img/bg.jpg)";
+    };
+    
+    
+    //Функция сортировки массива по алфавиту 
+    const sortArr = (arr) => {
+        arr.sort();
+    };
+    
+    
+    // Функция обновления списка фильмов 
+    function createMovieList (films, parent) {
+        // Удаляем то что есть в верстке
+        parent.innerHTML = '';
+
+        // Отсортировать фильмы в списке по алфавиту 
+        sortArr(films);
+
+        // Добавляем новый код
+        // Добавить нумерацию выведенных фильмов
+        films.forEach( (film, i ) =>{
+            parent.innerHTML += `
+                <li class="promo__interactive-item">${i + 1} ${film}
+                    <div class="delete"></div>
+                </li>
+            `;
+        });
+
+        // Удаляем элемент при клиеке на корзину
+       // Получаем все элементы со старницы с классом "delete" и перебираем их 
+        document.querySelectorAll('.delete').forEach ((btn, i) => {
+            // Из перебираемых элементов удаляем тот на котором произошло событие click
+            btn.addEventListener('click', () => {
+                // Удаляем со страницы родителя btn
+                btn.parentElement.remove();
+                //Удаляем из масива
+                movieDB.movies.splice(i, 1);
+                //Перестраиваем список элементов и обновляем номерацию 
+                createMovieList (films, parent);
+            });
+        });
     }
     
-    movieDB.movies.push(newFilm);
-    // 5) Фильмы должны быть отсортированы по алфавиту
-    movieDB.movies.sort();
 
-    // Удаляем то что есть в верстке
-    movieList.innerHTML = '';
+    //Функция добавления нового элемета в массив при отправке данных через форму 
+    addForm.addEventListener ('submit', (event) => {
+        //Отменяем обновление страницы по умолчанию
+        event.preventDefault();
 
-    // Добавляем новый код
-    // Добавить нумерацию выведенных фильмов 
-    movieDB.movies.forEach( (film, i ) =>{
-        movieList.innerHTML += `
-            <li class="promo__interactive-item">${i + 1} ${film}
-                <div class="delete"></div>
-            </li>
-        `;
+        let newFilm = addInput.value; // Получаем значение из инпута (что ввел пользователь)
+        const favorit = checkbox.checked; //Получаем значение из чекбокса (стоит ли галка)
+
+        //Если newFilm == true то производим добавление и сортировку
+        if (newFilm) {
+
+            if (newFilm.length > 21) {
+                newFilm = `${newFilm.substring(0, 22)}...`;
+            }
+
+            if (favorit) {
+                console.log("Добавляем любимый фильм");
+            }
+            //добавляем новый элемент в массив с фильмами
+            movieDB.movies.push(newFilm);
+
+            //сортируем по алфавиту 
+            sortArr(movieDB.movies);
+
+            // Обновляем списко фильмов 
+            createMovieList (movieDB.movies, movieList);
+
+        }
+        
+        //Очищаем форму
+        event.target.reset();
     });
-    
-    // 4) Если в форме стоит галочка "Сделать любимым" - в консоль вывести сообщение: 
-    // "Добавляем любимый фильм"
-    if (checkbox.checked == true) {
-        console.log("Добавляем любимый фильм");
-    }
-    console.log(movieDB.movies);
-});
 
-// 3) При клике на мусорную корзину - элемент будет удаляться из списка (сложно)
-// - не сделала 
+
+
+    // Удалить все рекламные блоки со страницы (правая часть сайта)
+    deliteAdv (add); 
+
+    // Применяем изменения на странице 
+    makeChanges();
+
+    
+
+    // Обновляем списко фильмов 
+    createMovieList (movieDB.movies, movieList);
+    
+});
